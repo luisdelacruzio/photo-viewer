@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Photo Viewer</title>
+	<link rel="stylesheet" type="text/css" href="/vendor/twbs/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="/web/css/main.css">
+</head>
+<body>
+<header>
+	<div class="navbar navbar-dark bg-dark shadow-sm">
+		<div class="container d-flex justify-content-between">
+			<a href="/" class="navbar-brand d-flex align-items-center">
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true" class="mr-2" viewBox="0 0 24 24" focusable="false"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+				<strong>Photo Viewer</strong>
+			</a>
+		</div>
+	</div>
+</header>
+<main role="main">
+	<section class="jumbotron text-center">
+		<div class="container">
+			<h1 class="jumbotron-heading">Welcome to the photo viewer!</h1>
+			<p class="lead text-muted">Check out the various random pictures collected from the interwebs!</p>
+			<p>
+				<a id="prev-page" href="" class="btn btn-secondary my-2 d-none">Prev Page</a>
+				<button id="toggle-grayscale" class="btn btn-primary my-2">Toggle Grayscale</button>
+                <a id="next-page" href="" class="btn btn-secondary my-2 d-none">Next Page</a>
+			</p>
+		</div>
+	</section>
+	<div class="album py-5 bg-light">
+		<div id="album-container" class="container">
+			<!-- Photo Album will be loaded here -->
+		</div>
+	</div>
+</main>
+<footer class="text-muted">
+	<div class="container">
+		<p>Photo Gallery Example by Luis Delacruz</p>
+	</div>
+</footer>
+<script type="text/javascript" src="/web/js/PhotoAlbum.js"></script>
+<script type="text/javascript">
+    let album = new PhotoAlbum();
+</script>
+</body>
+</html>
