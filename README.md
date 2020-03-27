@@ -1,7 +1,7 @@
 ## Photo Viewer
 
 This is a photo viewer web application that takes a csv file containing a list of URLs ( hardcoded to 
-pull this specific csv: (https://pastebin.com/raw/BmA8B0tY) and creates a photo gallery. This web application is
+pull this specific csv: https://pastebin.com/raw/BmA8B0tY ) and creates a photo gallery. This web application is
 comprised of a front-end gallery and back-end API. 
 
 ### prerequisites
