@@ -2,7 +2,7 @@
 
 use PhotoViewer\Api\V1\Controller;
 
-require '../../vendor/autoload.php';
+require __DIR__ . '/../../vendor/autoload.php';
 require 'classes/Images.class.php';
 require 'classes/Controller.class.php';
 
