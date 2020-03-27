@@ -10,21 +10,36 @@ class PhotoAlbum {
         this.shouldToggleGrayScale = false;
         this.lastPage = null;
         this.currPage = null;
+        this.filterDimensions = [];
 
-        let albumParams = null;
+        let albumParams = {};
+
         let currPagination = PhotoAlbum.getCurrPagination();
 
         // if we aren't on the first page, then get the image results of the current page
         if(currPagination !== false) {
-            albumParams = {
-                'paged': currPagination
-            };
+            albumParams['paged'] = currPagination;
+        }
+
+        let currFilterDimensions = PhotoAlbum.getCurrFilterDimensions();
+
+        if(currFilterDimensions !== false) {
+            albumParams['filter-dimensions'] = currFilterDimensions;
+
+            if(currFilterDimensions[0] > -1) {
+                document.getElementById('width').value = currFilterDimensions[0];
+            }
+
+            if(currFilterDimensions[1] > -1) {
+                document.getElementById('height').value = currFilterDimensions[1];
+            }
         }
 
         // request the images and create the gallery
         this.requestImages(albumParams);
 
         document.getElementById('toggle-grayscale').addEventListener('click', () => this.toggleGrayScale());
+        document.getElementById('filter').addEventListener('click', () => this.filterImages());
     }
 
     /**
@@ -46,6 +61,7 @@ class PhotoAlbum {
 
                 this.lastPage = responseBody['last_page'];
                 this.currPage = responseBody['page'];
+                this.filterDimensions = responseBody['filter-dimensions'];
 
                 this.create(responseBody['image_urls']);
                 this.updatePaginationButtons();
@@ -83,6 +99,10 @@ class PhotoAlbum {
             paramsStr.push(`toggle-grayscale=${params['toggle-grayscale']}`);
         }
 
+        if (params['filter-dimensions'] != null && params['filter-dimensions'].length > 0) {
+            paramsStr.push(`filter-dimensions=${params['filter-dimensions']}`);
+        }
+
         let resultingStr = "";
 
         for (let i = 0; i < paramsStr.length; i++) {
@@ -103,18 +123,19 @@ class PhotoAlbum {
         let row = document.createElement('DIV');
         row.classList.add('row');
 
-        for(let i = 0; i < images.length; i++) {
+        if(images !== null) {
+            for(let i = 0; i < images.length; i++) {
 
-            let col = document.createElement('DIV');
-            col.classList.add('col');
+                let col = document.createElement('DIV');
+                col.classList.add('col');
 
-            let img = document.createElement('IMG');
-            img.src = images[i];
+                let img = document.createElement('IMG');
+                img.src = images[i];
 
-            col.appendChild(img);
-            row.appendChild(col);
+                col.appendChild(img);
+                row.appendChild(col);
+            }
         }
-
 
         if(this.el !== null) {
             this.container.replaceChild(row, this.el);
@@ -133,30 +154,53 @@ class PhotoAlbum {
         // keep track of the toggle state
         this.shouldToggleGrayScale = !this.shouldToggleGrayScale;
 
-        this.requestImages({
+        let requestParams = {
             'toggle-grayscale': this.shouldToggleGrayScale,
             'paged': this.currPage
-        });
+        };
+
+        if(this.filterDimensions.length !== 0) {
+            requestParams['filter-dimensions'] = this.filterDimensions;
+        }
+
+        this.requestImages(requestParams);
     }
 
     /**
      * Updates the pagination buttons
      */
     updatePaginationButtons() {
-        if (this.currPage < this.lastPage) {
 
-            let nextPaginationButton = document.getElementById('next-page');
+        let nextPaginationButton = document.getElementById('next-page');
+        let prevPaginationButton = document.getElementById('prev-page');
+
+        if (this.currPage < this.lastPage) {
 
             nextPaginationButton.classList.remove('d-none');
             nextPaginationButton.href = `/?paged=${this.currPage + 1}`;
 
+            if(this.filterDimensions.length > 0) {
+                nextPaginationButton.href += `&filter-dimensions=${this.filterDimensions}`;
+            }
+
+        } else {
+            if(!nextPaginationButton.classList.contains('d-none')) {
+                nextPaginationButton.classList.add('d-none');
+            }
         }
 
         if(this.currPage > 0) {
-            let prevPaginationButton = document.getElementById('prev-page');
 
             prevPaginationButton.classList.remove('d-none');
             prevPaginationButton.href = `/?paged=${this.currPage - 1}`;
+
+            if(this.filterDimensions.length > 0) {
+                prevPaginationButton.href += `&filter-dimensions=${this.filterDimensions}`;
+            }
+        } else {
+            if(!prevPaginationButton.classList.contains('d-none')) {
+                prevPaginationButton.classList.add('d-none');
+            }
         }
     }
 
@@ -170,9 +214,70 @@ class PhotoAlbum {
         const urlParams = new URLSearchParams(window.location.search);
 
         if(urlParams.has('paged')) {
-            return parseInt(urlParams.get('paged'));
+
+            let pageNum = parseInt(urlParams.get('paged'));
+
+            if(isNaN(pageNum)) {
+                return false;
+            } else {
+                return pageNum;
+            }
         }
 
         return false;
+    }
+
+    /**
+     * The current dimensions by which to filter the images by
+     *
+     * @returns {array|boolean} filter dimensions or false if no filter
+     */
+    static getCurrFilterDimensions() {
+
+        const urlParams = new URLSearchParams(window.location.search);
+
+        if(urlParams.has('filter-dimensions')) {
+
+            let filterDimensions = urlParams.get('filter-dimensions').split(',');
+
+            for (let i = 0; i < filterDimensions.length; i++) {
+                let size = parseInt(filterDimensions[i]);
+
+                if(isNaN(size)) {
+                    filterDimensions[i] = -1;
+                } else {
+                    filterDimensions[i] = size;
+                }
+            }
+
+            return filterDimensions;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Filter images by dimensions
+     */
+    filterImages() {
+
+        // get the value of the width and height. Floor the results if user
+        // entered float.
+        let width = parseInt(document.getElementById('width').value);
+        let height = parseInt(document.getElementById('height').value);
+
+        if(isNaN(width)) {
+            width = -1;
+        }
+
+        if(isNaN(height)) {
+            height = -1;
+        }
+
+        this.requestImages({
+            'filter-dimensions': [width, height]
+        });
+
     }
 }

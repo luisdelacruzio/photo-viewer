@@ -15,7 +15,12 @@ $controller = new Controller();
 // If we have a match on /api/v1/images then continue
 if (preg_match('/(images)/', $_SERVER["REQUEST_URI"])) {
 
-	echo $controller->imagesAction();
+	if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+		echo $controller->imagesAction($_GET);
+	} else {
+		http_response_code(405);
+		die();
+	}
 
 } else {
 
